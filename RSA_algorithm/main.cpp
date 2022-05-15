@@ -12,16 +12,21 @@ protected:
 
     static long int calculateD( long int e, long int t);
     static bool nod_evklid(int a, int b);//проверка, является ли число простым
-    static bool is_prime(int m);//алгоритм Миллера-Рабина
+    bool isPrime(int n);               //алгоритм Миллера-Рабина
+    bool miiller_test(int w, int n);
+    static int power(int x, unsigned int y, int p);
+
     void create_prime_numbers();
     void create_keys();
     static long powerFast(long num, long deg);//алгоритм быстрого возведения в степень
     static long int decrypt(long int me, long int d, long int mod);
-
+    int gcd (int a, int b, int &x, int& y);
 };
 class Crypt:RSA{
 private:
-    std::vector<char> arr_en = {' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+    std::vector<char> arr_en = {' ', 'b', 'a', 'j', 'x', 'w', 'f', 'g', 'c', 't',
+                                'h', 'k', 'l', 'z', 'n', 'o', 's', 'q', 'r', 'p', 'i',
+                                'u', 'v', 'e', 'd', 'y', 'm'};
     std::string line;
     std::string s;//line for save new
     std::queue<int>elems_queue;
@@ -39,7 +44,9 @@ public:
 private:
     void rsa_algorithm(){
         std::cout<<"do you want to enter two prime numbers? [y, n]\n";
-        char yes_no; std::cin>>yes_no;
+        char yes_no;
+        std::cin>>yes_no;
+        //yes_no='n';
         switch (yes_no) {
             case 'y':
                 std::cout<<"p= ";std::cin>>p;
@@ -58,13 +65,13 @@ private:
     static void print(std::queue<int> a);
 };
 int main() {
-
-    std::string str="text";
+    srand(time(nullptr));
+    std::string str="text me something";
     Crypt me(str);
-me.encryption();
-me.print_encrypted_line();
-me.decryption();
-me.print_decrypted_line();
+    me.encryption();
+    me.print_encrypted_line();
+    me.decryption();
+    me.print_decrypted_line();
 
     return 0;
 }
@@ -112,7 +119,6 @@ long int RSA::decrypt(long int me, long int d, long int mod){
 
     current = me;
     result = 1;
-
     for ( long int j = 0; j < d; j++ )
     {
         result = result * current;
@@ -171,84 +177,146 @@ void RSA::create_keys(){
         if(e<pi && nod_evklid(e, pi))
             break;
     }
-    d=calculateD(e, pi);
+    int a1;
+    gcd(e, pi, d, a1);
+    if(d<0){
+        d+=pi;
+    }
     std::cout<<"p= "<<p<<"  q= "<<q<<"  pi= "<<pi<<std::endl;
     std::cout<<"public key\n{e, mod}  {"<<e<<", "<<mod<<"}";
-    std::cout<<"\nprivate key\nd, mod}  {"<<d<<", "<<mod<<"}";
+    std::cout<<"\nprivate key\n{d, mod}  {"<<d<<", "<<mod<<"}";
 
 }
 void RSA::create_prime_numbers() {
     do{
-        p=rand();
-        q=rand();
+        int A=1, B=99;
+        p=rand()%(B-A+1) + A;//[A, B]
+        q=rand()%(B-A+1) + A;
 
     } while (p==q);
+    std::cout<<"###############\n p= "<<p<<"q=  "<<q<<"\n";
     while(true){
-        if(is_prime(p)){
-            if(is_prime(q)){
+        if(isPrime(p)){
+            std::cout<<"p=true\n";
+            if(isPrime(q)){
+                std::cout<<"q=true\n";
                 break;
             }
             else{
-                while(!is_prime(q))
-                    q++;
+                while(!isPrime(q)){
+                    q+=1;
+                    std::cout<<"q=false\n";
+                }
+                std::cout<<"q=true\n";
                 break;
             }
         }else{
-            while(!is_prime(p))
-                p++;
-            if(is_prime(q)){
+            while(!isPrime(p)){
+                p+=1;
+                std::cout<<"p=false\n";
+            }
+            std::cout<<"p=true\n";
+            if(isPrime(q)){
+                std::cout<<"q=true\n";
                 break;
             }
             else{
-                while(!is_prime(q))
-                    q++;
+                while(!isPrime(q)){
+                    q+=1;
+                    std::cout<<"q=false\n";
+                }
+                std::cout<<"q=true\n";
                 break;
             }
         }
     }
 
 }
-bool RSA::is_prime(int m){
 
-    int r = 1000;
-    int t = m-1;
-    int s = 0;
-    bool b = true;
-    if(m%2==0){
-        return false;
+int RSA::gcd(int a, int b, int &x, int& y) {
+    if (b < a)
+    {
+        int t = a;
+        a = b;
+        b = t;
     }
-    if(m==1){
-        return false;
-    }
-    if(m==2){
-        return true;
-    }
-    while(t%2==0 || b){
-        b = false;
-        s++;
-        t=t/2;
-    }
-    for(int i=1;i<r+1;i++){
-        int a = 2+rand()%(m-2);
-        // int x = int(float(pow(float(a),float(t))))%m;
-        int x = int(float(powerFast(a, t)))%m;
 
-        if((x==1)||(x==m-1)){
-            continue;
-        }
-        for(int j=1;j<s;j++){
-            //x=int(float(pow(float(x),2)))%m;
-            x=int(float(powerFast(x, 2)))%m;
-
-            if(x==1){
-                return false;
-            }
-            if(x==m-1){
-                continue;
-            }
-        }
+    if (a == 0)
+    {
+        x = 0;
+        y = 1;
+        return b;
     }
-    return true;
+
+    int u = gcd(b % a, a, x, y);
+
+    int newY = x;
+    int newX = y - (b / a) * x;
+
+    x = newX;
+    y = newY;
+    return u;
+}
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+int RSA::power(int x, unsigned int y, int p)
+{
+    int res = 1;      // Initialize result
+    x = x % p;  // Update x if it is more than or
+    // equal to p
+    while (y > 0)
+    {
+        // If y is odd, multiply x with result
+        if (y & 1)
+            res = (res*x) % p;
+
+        // y must be even now
+        y = y>>1; // y = y/2
+        x = (x*x) % p;
+    }
+    return res;
 }
 
+bool RSA::miiller_test(int w, int n)
+{
+    // Pick a random number in [2..n-2]
+    // Corner cases make sure that n > 4
+    int a = 2 + rand() % (n - 4);
+
+    // Compute a^d % n
+    int x = power(a, w, n);
+
+    if (x == 1  || x == n-1)
+        return true;
+
+    while (w != n-1)
+    {
+        x = (x * x) % n;
+        w *= 2;
+
+        if (x == 1)      return false;
+        if (x == n-1)    return true;
+    }
+
+    return false;
+}
+bool RSA::isPrime(int n)
+{   int k=4;
+    // Corner cases
+    if (n <= 1 || n == 4)  return false;
+    if (n <= 3) return true;
+
+    // Find r such that n = 2^d * r + 1 for some r >= 1
+    int d = n - 1;
+    while (d % 2 == 0)
+        d /= 2;
+
+    // Iterate given nber of 'k' times
+    for (int i = 0; i < k; i++)
+        if (!miiller_test(d, n))
+            return false;
+
+    return true;
+}
 
